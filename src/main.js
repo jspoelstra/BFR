@@ -350,10 +350,13 @@ function QuizView(){
       h('div', { class:'small' }, `Question ${idx+1}/${q.length}`),
       h('h3', {}, cur.text),
       h('div', { class:'grid' }, choiceEls),
-      showFeedback ? h('p', { class:'small' },
-        (selected === cur.answer)
-          ? 'Correct!'
-          : `Incorrect. Answer: ${cur.answer}${cur.ref ? ` (${cur.ref})` : ''}`
+      showFeedback ? h('div', {},
+        h('p', { class:'small' },
+          (selected === cur.answer)
+            ? 'Correct!'
+            : `Incorrect. Answer: ${cur.answer}${cur.ref ? ` (${cur.ref})` : ''}`
+        ),
+        cur.explanation ? h('p', { class:'small', style:'margin-top:8px; font-style:italic' }, cur.explanation) : ''
       ) : '',
       showFeedback ? h('button', { class:'button primary', onClick: next }, 'Next (Enter)') : ''
     );
@@ -416,6 +419,113 @@ function getQuizQuestionBank(){
     { text:'Altimeter setting to maintain flight level at/above 18,000 MSL:', choices:['28.92"','29.92"','30.00"','30.12"'], answer:'29.92"', ref:'91.121(a)(2)' },
     { text:'ATC light signal steady red in flight means:', choices:['Cleared to land','Give way and continue circling','Return for landing','Airport unsafe—do not land'], answer:'Give way and continue circling', ref:'91.125' },
     { text:'Operating at non-towered Class G airport, airplane turns are:', choices:['Right unless otherwise indicated','Left unless otherwise indicated','Any direction','Based on runway heading only'], answer:'Left unless otherwise indicated', ref:'91.126(b)(1)' },
+    
+    // Scenario-based questions for realistic pilot decision-making
+    { 
+      text:'You arrive to depart VFR during the day and discover the magnetic compass is inoperative. Weather is VFR and all other systems are normal. Can you legally fly this aircraft?', 
+      choices:['Yes, the compass is not required for VFR day flight','Yes, but only to the nearest repair facility','No, a magnetic direction indicator is required equipment','Yes, if you can navigate by GPS only'], 
+      answer:'No, a magnetic direction indicator is required equipment', 
+      explanation:'A magnetic direction indicator is required equipment for VFR day flight under §91.205(b). Since it\'s required equipment and inoperative, §91.213(d) relief does not apply unless an MEL authorizes deferral (most small GA aircraft do not have an MEL).', 
+      ref:'§91.205(b)(3), §91.213' 
+    },
+    { 
+      text:'You plan to depart VFR at night for a personal flight. During preflight, you discover the landing light is inoperative but all position lights and anti-collision lights work normally. Can you legally depart?', 
+      choices:['No, landing lights are always required for night flight','Yes, landing lights are only required for flights for hire at night','No, all lights must be operational for night VFR','Yes, but only if you return before sunrise'], 
+      answer:'Yes, landing lights are only required for flights for hire at night', 
+      explanation:'Under §91.205(c)(4), landing lights are required for night VFR only when the aircraft is operated for hire. Position lights and anti-collision lights are required for all night VFR operations.', 
+      ref:'§91.205(c)(4)' 
+    },
+    { 
+      text:'Your transponder and ADS-B Out equipment becomes inoperative while on the ground at a Class C airport. You need to depart. What are your options?', 
+      choices:['You cannot depart from Class C airspace without a transponder','You can depart immediately as long as you stay VFR','You can depart with ATC authorization after making a request','You must taxi to a non-towered airport to depart'], 
+      answer:'You can depart with ATC authorization after making a request', 
+      explanation:'Both §91.215 and §91.225 allow ATC to authorize deviations for inoperative transponder/ADS-B equipment. You must request authorization in advance, and ATC may approve the operation with specific instructions.', 
+      ref:'§91.215(d), §91.225(f)' 
+    },
+    { 
+      text:'You discover your ELT is inoperative during preflight for a local training flight. The aircraft has been operated recently and the ELT worked on the last flight three days ago. Can you fly today?', 
+      choices:['No, the ELT must always be operational','Yes, but only to the nearest repair facility','Yes, §91.207 allows temporary operation if properly documented','No, you must install a new ELT before flight'], 
+      answer:'Yes, §91.207 allows temporary operation if properly documented', 
+      explanation:'§91.207(f) allows operation with an inoperative ELT if the aircraft is being operated for training, ferrying to repair, or other specific purposes, provided proper documentation (placard and logbook entry) is made.', 
+      ref:'§91.207(f)' 
+    },
+    { 
+      text:'You\'re planning a VFR cross-country flight departing at 10 AM. Your calculations show you\'ll land at your destination with exactly 25 minutes of fuel remaining. Is this legal for day VFR operations?', 
+      choices:['Yes, 25 minutes exceeds the minimum reserve','No, you need at least 30 minutes fuel reserve','Yes, but only if weather remains VFR','No, you need at least 45 minutes fuel reserve'], 
+      answer:'No, you need at least 30 minutes fuel reserve', 
+      explanation:'§91.151(a) requires aircraft operating under VFR during the day to carry enough fuel to fly to the first point of intended landing and thereafter for at least 30 minutes at normal cruising speed.', 
+      ref:'§91.151(a)' 
+    },
+    { 
+      text:'You\'re flying VFR at night and your calculations show you\'ll arrive at your destination with 35 minutes of fuel remaining at normal cruise power. Is this legal?', 
+      choices:['Yes, 35 minutes exceeds the night requirement','No, you need at least 45 minutes fuel reserve at night','Yes, the 30-minute rule applies day and night','No, you need at least one hour reserve at night'], 
+      answer:'No, you need at least 45 minutes fuel reserve at night', 
+      explanation:'§91.151(b) requires aircraft operating under VFR at night to carry enough fuel to fly to the first point of intended landing and thereafter for at least 45 minutes at normal cruising speed.', 
+      ref:'§91.151(b)' 
+    },
+    { 
+      text:'Flying over a congested area of a city, what is the minimum safe altitude you must maintain in a single-engine aircraft?', 
+      choices:['500 feet above the highest obstacle within 2,000 feet','1,000 feet above the highest obstacle within 2,000 feet horizontally','1,500 feet above the surface','2,000 feet above the surface'], 
+      answer:'1,000 feet above the highest obstacle within 2,000 feet horizontally', 
+      explanation:'§91.119(b) requires aircraft over congested areas to maintain at least 1,000 feet above the highest obstacle within a horizontal radius of 2,000 feet of the aircraft.', 
+      ref:'§91.119(b)' 
+    },
+    { 
+      text:'You\'re conducting pipeline patrol over sparsely populated terrain at 400 feet AGL, staying at least 500 feet horizontally from all structures and people. A person on the ground signals distress. Can you legally descend lower to assist?', 
+      choices:['No, you must maintain 500 feet AGL minimum','Yes, emergency situations allow deviation from altitude rules','No, only emergency responders can fly below 500 feet','Yes, but only over water'], 
+      answer:'Yes, emergency situations allow deviation from altitude rules', 
+      explanation:'§91.3(b) gives the pilot-in-command authority to deviate from any rule when an emergency exists that requires immediate action. Providing assistance in an emergency situation would justify deviation from minimum altitude requirements.', 
+      ref:'§91.3(b), §91.119' 
+    },
+    { 
+      text:'During your instrument training, your CFII covers the pitot-static system and notes that the static port is blocked. For VFR flight, which instruments would be affected and is the flight legal?', 
+      choices:['Only altimeter affected; flight is legal VFR','Altimeter and airspeed; flight is illegal','Altimeter, airspeed, and VSI; flight depends on other equipment','Only airspeed affected; flight is legal'], 
+      answer:'Altimeter, airspeed, and VSI; flight depends on other equipment', 
+      explanation:'A blocked static port affects the altimeter, airspeed indicator, and vertical speed indicator. These are all required instruments for VFR flight under §91.205(b), making the flight illegal unless alternate static source procedures can be used.', 
+      ref:'§91.205(b)(3)(4)(9)' 
+    },
+    { 
+      text:'You\'re planning to fly from a non-towered airport in Class G airspace to a Class D airport 85 miles away. Your aircraft\'s transponder fails during engine run-up. What are your options?', 
+      choices:['Cancel the flight; transponders are always required','Fly to Class D airport; transponders not required in Class G','Contact Class D tower for authorization to enter their airspace','Fly VFR; transponders only required above 10,000 feet'], 
+      answer:'Contact Class D tower for authorization to enter their airspace', 
+      explanation:'While transponders are not required in most Class G airspace, they are required in Class D airspace under §91.215(b)(2). You must obtain authorization from ATC to operate in Class D airspace without a functioning transponder.', 
+      ref:'§91.215(b)(2), §91.215(d)' 
+    },
+    { 
+      text:'During a VFR flight, you encounter unexpected IMC conditions. Your options under §91.3 include all of the following except:', 
+      choices:['Request an emergency clearance from ATC','Deviate from VFR altitude requirements to get out of clouds','Continue VFR flight if you have minimum fuel reserves','Turn around immediately to return to VFR conditions'], 
+      answer:'Continue VFR flight if you have minimum fuel reserves', 
+      explanation:'§91.3(b) allows PIC to deviate from regulations during emergencies, but does not allow continuing VFR flight in IMC conditions. Fuel reserves are irrelevant to the basic prohibition against VFR flight in IMC.', 
+      ref:'§91.3(b), §91.155' 
+    },
+    { 
+      text:'Your aircraft\'s position lights fail 30 minutes before sunset. You have a 2-hour VFR flight planned departing in 45 minutes. What should you do?', 
+      choices:['Depart immediately before official sunset','Cancel the flight; position lights are required from sunset to sunrise','Depart as planned; position lights only required in actual darkness','Get the lights repaired; they\'re required from sunset to sunrise'], 
+      answer:'Get the lights repaired; they\'re required from sunset to sunrise', 
+      explanation:'§91.205(c)(1) requires position lights for operations from sunset to sunrise. Since your flight extends past sunset, you must have functioning position lights before departure.', 
+      ref:'§91.205(c)(1)' 
+    },
+    { 
+      text:'You\'re flying a rented aircraft and discover a placard stating "INOP - ENGINE DRIVEN VACUUM PUMP - 03/15/24" with a maintenance logbook entry. Today is 03/20/24. The attitude indicator and heading indicator are vacuum-driven. Can you legally fly VFR?', 
+      choices:['Yes, if the attitude and heading indicators are turned off','No, these instruments are required for VFR flight','Yes, but only for local flights under 50 miles','Depends on whether the aircraft has an MEL'], 
+      answer:'Depends on whether the aircraft has an MEL', 
+      explanation:'The attitude indicator and heading indicator are required for VFR flight per §91.205(b). If inoperative, §91.213(d) may allow operation if proper placarding and documentation exist, but only if no MEL exists or the MEL permits deferral.', 
+      ref:'§91.205(b)(7)(8), §91.213(d)' 
+    },
+    { 
+      text:'Flying VFR in Class E airspace at 8,500 feet MSL, you encounter visibility that appears to be about 2 miles with scattered clouds 1,500 feet below you. What should you do?', 
+      choices:['Continue; you\'re legal with 2 miles visibility in Class E','Descend below the clouds to maintain VFR cloud clearances','Request higher altitude to maintain required visibility','Descend or change course to maintain 3 miles visibility'], 
+      answer:'Descend or change course to maintain 3 miles visibility', 
+      explanation:'In Class E airspace above 1,200 feet AGL, VFR minimums require 3 statute miles visibility and specific cloud clearances. Two miles visibility is below the legal minimum.', 
+      ref:'§91.155(a)' 
+    },
+    { 
+      text:'You\'re conducting touch-and-go practice at a non-towered airport when your radio fails. There are other aircraft in the pattern. What is your best course of action?', 
+      choices:['Immediately exit the pattern and land at the nearest towered airport','Continue in the pattern using light gun signals','Continue normal pattern operations while watching for other traffic','Land immediately on the nearest available runway'], 
+      answer:'Continue normal pattern operations while watching for other traffic', 
+      explanation:'§91.126(b) establishes standard traffic pattern procedures for non-towered airports. Radio communication is not required at non-towered airports, though it\'s highly recommended. Continue normal pattern operations while maintaining vigilant watch for other traffic.', 
+      ref:'§91.126(b), §91.113' 
+    }
   ];
 }
 
