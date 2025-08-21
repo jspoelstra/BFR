@@ -1,7 +1,15 @@
 export const initialState = {
   progress: {
     studyReadSections: {},
-    flashcards: { seen: 0, correct: 0 },
+    flashcards: { 
+      seen: 0, 
+      correct: 0,
+      // Per-deck progress tracking
+      decks: {},
+      currentDeck: null,
+      // Card scheduling for spaced repetition
+      cardSchedule: {} // deckId-cardIndex -> { lastSeen, interval, easeFactor }
+    },
     quizzes: { attempts: 0, best: 0 },
     sectional: { attempts: 0, correct: 0 },
     runway: { attempts: 0, correct: 0 },
@@ -22,6 +30,8 @@ export function loadState(){
   const merged = { ...base, ...parsed };
   merged.progress = { ...base.progress, ...(parsed.progress||{}) };
   merged.progress.flashcards = { ...base.progress.flashcards, ...((parsed.progress||{}).flashcards||{}) };
+  merged.progress.flashcards.decks = { ...base.progress.flashcards.decks, ...((parsed.progress||{}).flashcards||{}).decks||{} };
+  merged.progress.flashcards.cardSchedule = { ...base.progress.flashcards.cardSchedule, ...((parsed.progress||{}).flashcards||{}).cardSchedule||{} };
   merged.progress.quizzes = { ...base.progress.quizzes, ...((parsed.progress||{}).quizzes||{}) };
   merged.progress.sectional = { ...base.progress.sectional, ...((parsed.progress||{}).sectional||{}) };
   merged.progress.runway = { ...base.progress.runway, ...((parsed.progress||{}).runway||{}) };

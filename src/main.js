@@ -219,14 +219,32 @@ async function StudyView(){
 
 // Flashcards
 function FlashcardsView(){
-  const cards = getFlashcards();
+  const decks = getFlashcardDecks();
+  let currentDeckId = state.progress.flashcards.currentDeck || Object.keys(decks)[0];
+  let currentDeck = decks[currentDeckId];
+  let currentCards = [];
   let i = 0;
   let showAnswer = false;
 
-  const scoreLabel = h('span', { class:'small' }, `${state.progress.flashcards.correct}/${Math.max(1,state.progress.flashcards.seen)} correct`);
-  const cardHost = h('div', { class:'card' });
+  // Initialize deck progress if not exists
+  if (!state.progress.flashcards.decks[currentDeckId]) {
+    state.progress.flashcards.decks[currentDeckId] = { seen: 0, correct: 0 };
+  }
+
+  const deckSelector = h('select', { 
+    value: currentDeckId,
+    onChange: (e) => switchDeck(e.target.value)
+  });
+  
+  const scoreLabel = h('span', { class: 'small' });
+  const cardHost = h('div', { class: 'card' });
+  
   const container = panel('Flashcards',
-    scoreLabel,
+    h('div', { class: 'flex', style: 'margin-bottom: 12px; align-items: center; gap: 12px;' },
+      h('label', { class: 'small' }, 'Deck:'),
+      deckSelector,
+      scoreLabel
+    ),
     h('div', { class:'grid' },
       cardHost,
       h('div', { class:'flex' },
@@ -237,25 +255,145 @@ function FlashcardsView(){
     )
   );
 
+  function initializeDeck() {
+    currentDeck = decks[currentDeckId];
+    currentCards = getScheduledCards(currentDeckId);
+    if (currentCards.length === 0) {
+      // If no cards due, show all cards in order
+      currentCards = currentDeck.cards.map((_, index) => index);
+    }
+    i = 0;
+    showAnswer = false;
+    updateUI();
+  }
+
+  function updateUI() {
+    // Update deck selector
+    deckSelector.innerHTML = '';
+    Object.entries(decks).forEach(([id, deck]) => {
+      const option = h('option', { value: id }, deck.title);
+      if (id === currentDeckId) option.selected = true;
+      deckSelector.append(option);
+    });
+
+    // Update score
+    const deckProgress = state.progress.flashcards.decks[currentDeckId] || { seen: 0, correct: 0 };
+    scoreLabel.textContent = `${deckProgress.correct}/${Math.max(1, deckProgress.seen)} correct`;
+    
+    renderCard();
+  }
+
+  function getScheduledCards(deckId) {
+    const now = Date.now();
+    const scheduledCards = [];
+    
+    currentDeck.cards.forEach((_, cardIndex) => {
+      const cardKey = `${deckId}-${cardIndex}`;
+      const schedule = state.progress.flashcards.cardSchedule[cardKey];
+      
+      if (!schedule || now >= schedule.nextReview) {
+        scheduledCards.push(cardIndex);
+      }
+    });
+    
+    return scheduledCards;
+  }
+
   function renderCard(){
-    const c = cards[i % cards.length];
+    if (currentCards.length === 0) {
+      cardHost.innerHTML = '';
+      cardHost.append(
+        h('div', { class: 'small' }, 'No cards due for review'),
+        h('h3', {}, 'All caught up!'),
+        h('div', {}, 'Come back later or switch to another deck.')
+      );
+      return;
+    }
+
+    const cardIndex = currentCards[i % currentCards.length];
+    const c = currentDeck.cards[cardIndex];
     cardHost.innerHTML = '';
     cardHost.append(
-      h('div', { class:'small' }, `Card ${i+1}/${cards.length}`),
+      h('div', { class:'small' }, `Card ${i+1}/${currentCards.length} • ${currentDeck.title}`),
       h('h3', {}, showAnswer ? 'Answer' : 'Question'),
       h('div', {}, showAnswer ? c.a : c.q)
     );
   }
 
-  function flip(){ showAnswer = !showAnswer; renderCard(); }
+  function flip(){ 
+    showAnswer = !showAnswer; 
+    renderCard(); 
+  }
+
   function grade(correct){
+    if (currentCards.length === 0) return;
+    
+    const cardIndex = currentCards[i % currentCards.length];
+    const cardKey = `${currentDeckId}-${cardIndex}`;
+    
+    // Update deck progress
+    if (!state.progress.flashcards.decks[currentDeckId]) {
+      state.progress.flashcards.decks[currentDeckId] = { seen: 0, correct: 0 };
+    }
+    state.progress.flashcards.decks[currentDeckId].seen++;
+    if (correct) state.progress.flashcards.decks[currentDeckId].correct++;
+    
+    // Update global progress for backward compatibility
     state.progress.flashcards.seen++;
-    if(correct) state.progress.flashcards.correct++;
+    if (correct) state.progress.flashcards.correct++;
+    
+    // Spaced repetition scheduling
+    updateCardSchedule(cardKey, correct);
+    
     saveState(state);
-    i = (i + (correct ? 1 : 0)) % cards.length; // simple spacing
+    
+    // Remove card from current session if correct, or move to next
+    if (correct) {
+      currentCards.splice(i % currentCards.length, 1);
+      if (i >= currentCards.length) i = 0;
+    } else {
+      i = (i + 1) % currentCards.length;
+    }
+    
     showAnswer = false;
-    renderCard();
-  scoreLabel.textContent = `${state.progress.flashcards.correct}/${Math.max(1,state.progress.flashcards.seen)} correct`;
+    updateUI();
+  }
+
+  function updateCardSchedule(cardKey, correct) {
+    const now = Date.now();
+    let schedule = state.progress.flashcards.cardSchedule[cardKey];
+    
+    if (!schedule) {
+      schedule = {
+        interval: 1, // days
+        easeFactor: 2.5,
+        lastReview: now
+      };
+    }
+    
+    if (correct) {
+      // Increase interval using simple spaced repetition
+      schedule.interval = Math.max(1, Math.round(schedule.interval * schedule.easeFactor));
+      schedule.easeFactor = Math.min(3.0, schedule.easeFactor + 0.1);
+    } else {
+      // Reset interval for incorrect answers but don't make it too punishing
+      schedule.interval = Math.max(1, Math.round(schedule.interval * 0.5));
+      schedule.easeFactor = Math.max(1.3, schedule.easeFactor - 0.2);
+    }
+    
+    schedule.lastReview = now;
+    // Add minimum 10 seconds delay for correct answers to prevent immediate re-appearance
+    const minDelay = correct ? 10 * 1000 : 0; // 10 seconds for correct, immediate for incorrect
+    schedule.nextReview = now + Math.max(minDelay, schedule.interval * 24 * 60 * 60 * 1000);
+    
+    state.progress.flashcards.cardSchedule[cardKey] = schedule;
+  }
+
+  function switchDeck(deckId) {
+    currentDeckId = deckId;
+    state.progress.flashcards.currentDeck = deckId;
+    saveState(state);
+    initializeDeck();
   }
 
   function onKey(e){
@@ -266,25 +404,60 @@ function FlashcardsView(){
   }
   window.addEventListener('keydown', onKey);
 
-  renderCard();
+  initializeDeck();
   return container;
 }
 
-function getFlashcards(){
-  return [
-    { q: 'What authority does the PIC have during an in-flight emergency?', a: 'May deviate from any rule to the extent required (91.3(b)).' },
-    { q: 'Minimum time between drinking alcohol and acting as a crewmember?', a: '8 hours, and no BAC ≥ 0.04 (91.17).' },
-    { q: 'Preflight info required for any flight?', a: 'Runway lengths; takeoff/landing distances appropriate to the aircraft (91.103(b)).' },
-    { q: 'Right-of-way when converging (same category)?', a: 'Aircraft to the right has right-of-way (91.113(d)).' },
-    { q: 'Careless or reckless operation prohibition?', a: 'May not operate in a manner that endangers life or property (91.13).' },
-    { q: 'Seat belt/shoulder harness requirement for takeoff/landing?', a: 'Approved seat/berth with belt, shoulder harness if installed (91.107).' },
-    { q: 'Max indicated airspeed below 10,000 MSL unless authorized?', a: '250 knots IAS (91.117(a)).' },
-    { q: 'Min safe altitude over congested area?', a: '1,000 ft above highest obstacle within 2,000 ft horizontal (91.119(b)).' },
-    { q: 'When operating at/above 18,000 MSL, altimeter setting?', a: '29.92" Hg (91.121(a)(2)).' },
-    { q: 'ATC light signal: Steady green (in flight)?', a: 'Cleared to land (91.125).' },
-    { q: 'Operating in Class G airport vicinity—turn direction for airplanes?', a: 'Left traffic unless otherwise indicated (91.126(b)(1)).' },
-    { q: 'Who has right-of-way: balloon vs airplane?', a: 'Balloon (91.113(d)(1)).' },
-  ];
+function getFlashcardDecks(){
+  return {
+    'emergency': {
+      title: 'Emergency Procedures',
+      cards: [
+        { q: 'What authority does the PIC have during an in-flight emergency?', a: 'May deviate from any rule to the extent required (91.3(b)).' },
+      ]
+    },
+    'alcohol-drugs': {
+      title: 'Alcohol & Drugs',
+      cards: [
+        { q: 'Minimum time between drinking alcohol and acting as a crewmember?', a: '8 hours, and no BAC ≥ 0.04 (91.17).' },
+      ]
+    },
+    'preflight': {
+      title: 'Preflight Planning',
+      cards: [
+        { q: 'Preflight info required for any flight?', a: 'Runway lengths; takeoff/landing distances appropriate to the aircraft (91.103(b)).' },
+      ]
+    },
+    'right-of-way': {
+      title: 'Right-of-Way Rules',
+      cards: [
+        { q: 'Right-of-way when converging (same category)?', a: 'Aircraft to the right has right-of-way (91.113(d)).' },
+        { q: 'Who has right-of-way: balloon vs airplane?', a: 'Balloon (91.113(d)(1)).' },
+      ]
+    },
+    'operations': {
+      title: 'General Operations',
+      cards: [
+        { q: 'Careless or reckless operation prohibition?', a: 'May not operate in a manner that endangers life or property (91.13).' },
+        { q: 'Seat belt/shoulder harness requirement for takeoff/landing?', a: 'Approved seat/berth with belt, shoulder harness if installed (91.107).' },
+        { q: 'Operating in Class G airport vicinity—turn direction for airplanes?', a: 'Left traffic unless otherwise indicated (91.126(b)(1)).' },
+      ]
+    },
+    'airspace-speed': {
+      title: 'Airspace & Speed',
+      cards: [
+        { q: 'Max indicated airspeed below 10,000 MSL unless authorized?', a: '250 knots IAS (91.117(a)).' },
+        { q: 'Min safe altitude over congested area?', a: '1,000 ft above highest obstacle within 2,000 ft horizontal (91.119(b)).' },
+        { q: 'When operating at/above 18,000 MSL, altimeter setting?', a: '29.92" Hg (91.121(a)(2)).' },
+      ]
+    },
+    'atc': {
+      title: 'ATC Communications',
+      cards: [
+        { q: 'ATC light signal: Steady green (in flight)?', a: 'Cleared to land (91.125).' },
+      ]
+    }
+  };
 }
 
 // Quizzes
