@@ -110,9 +110,10 @@ async function StudyView(){
   const list = h('div', { class:'grid' });
   sidebar.appendChild(list);
 
+  const studyContent = h('div', { id:'study-content' }, 'Select a section from the left.');
   content.append(
     h('h3', {}, 'Content'),
-    h('div', { id:'study-content' }, 'Select a section from the left.')
+    studyContent
   );
 
   container.append(sidebar, content);
@@ -126,8 +127,7 @@ async function StudyView(){
     doc = new DOMParser().parseFromString(html, 'text/html');
   }catch(err){
     console.error(err);
-    const target = content.querySelector('#study-content');
-    if(target) target.textContent = 'Failed to load Part 91 content.';
+    studyContent.textContent = 'Failed to load Part 91 content.';
     return container;
   }
 
@@ -178,9 +178,8 @@ async function StudyView(){
 
   function show(id){
     const sec = doc.getElementById(id);
-    const cont = document.getElementById('study-content');
     if(!sec){
-      cont.innerHTML = 'Section not found in data';
+      studyContent.innerHTML = 'Section not found in data';
       return;
     }
     // Extract the section element and a few following siblings until next numbered section id
@@ -194,8 +193,8 @@ async function StudyView(){
       frag.appendChild(sib.cloneNode(true));
       sib = sib.nextElementSibling;
     }
-    cont.innerHTML = '';
-    cont.append(
+    studyContent.innerHTML = '';
+    studyContent.append(
       h('div', { class:'flex space-between' },
         h('div', {}, h('strong', {}, id), ' from Part 91'),
         h('div', {},
