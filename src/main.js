@@ -383,7 +383,9 @@ function FlashcardsView(){
     }
     
     schedule.lastReview = now;
-    schedule.nextReview = now + (schedule.interval * 24 * 60 * 60 * 1000); // convert days to ms
+    // Add minimum 10 seconds delay for correct answers to prevent immediate re-appearance
+    const minDelay = correct ? 10 * 1000 : 0; // 10 seconds for correct, immediate for incorrect
+    schedule.nextReview = now + Math.max(minDelay, schedule.interval * 24 * 60 * 60 * 1000);
     
     state.progress.flashcards.cardSchedule[cardKey] = schedule;
   }
