@@ -81,15 +81,27 @@ Place images in these folders to override the built‑in SVGs:
 
 Images are loaded if present; otherwise the app falls back to inline SVGs.
 
-#### Auto-fetch starter images
+#### Asset refresh and provenance
 
-A helper script can download a few standardized symbol/marking SVGs from Wikimedia (publicly hosted) as temporary stand-ins:
+The application uses training assets from two sources:
+
+1. **Official FAA Publications** (preferred): Public domain documents from https://www.faa.gov/
+   - FAA Aeronautical Chart Users' Guide
+   - FAA Airport Signs, Markings, and Lights guide
+
+2. **Wikimedia Commons SVG symbols** (fallback): Educational representations under various open licenses
+   - Sectional chart symbols and runway markings
+   - Used as placeholders until official FAA vector graphics become available
+
+To refresh assets, run:
 
 ```bash
 python3 scripts/fetch_assets.py
 ```
 
-You may replace them with images extracted from FAA publications at any time.
+**Note**: Download failures are expected and normal. The application gracefully falls back to built-in SVG symbols when external assets are unavailable. Check the "About & Sources" page in the app to verify asset status.
+
+**Licensing**: Always verify license compatibility before redistributing. FAA publications are public domain, while Wikimedia assets use various open licenses (see ATTRIBUTION.md).
 
 ## Contributing
 
@@ -111,7 +123,7 @@ Coding guidelines:
 Please see `ATTRIBUTION.md` for full details. Relevant references include:
 - FAA Aeronautical Chart Users’ Guide (Effective June 12, 2025): https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/aero_guide/
 - FAA Runway Safety Publications: https://www.faa.gov/airports/runway_safety/publications
-- Some starter images may be downloaded from Wikimedia Commons (licensed or public domain as indicated on each file page). Ensure license compliance if you redistribute.
+- Some starter images may be downloaded from Wikimedia Commons (various open licenses). **Asset Refresh**: Use `python3 scripts/fetch_assets.py` to download supplementary assets. The application works with built-in fallbacks if downloads fail. Ensure license compliance if you redistribute.
 
 ## License
 
