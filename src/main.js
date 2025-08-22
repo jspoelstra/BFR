@@ -97,28 +97,52 @@ function panel(title, right, body){
 
 // Study View
 async function StudyView(){
+  const { getTopics, calculateTopicProgress, TOPIC_MAP } = await import('./topics.js');
+  
   const container = h('div', { class:'grid cols-2' });
   const sidebar = h('div', { class:'panel' });
   const content = h('div', { class:'panel' });
 
   const searchInput = h('input', { type:'search', placeholder:'Search sections…', style:'width:100%;padding:10px;border-radius:10px;border:1px solid rgba(122,140,170,.2);background:#0e1830;color:#e6edf7;margin:6px 0 10px;' });
-  sidebar.append(
-    h('h3', {}, 'Part 91 Topics'),
-    h('p', { class:'small' }, 'Click a section to read. Mark as read to track progress.'),
-    searchInput
-  );
   const list = h('div', { class:'grid' });
-  sidebar.appendChild(list);
+  const studyContent = h('div', { id:'study-content' }, 'Select a topic or section to begin.');
 
-  const studyContent = h('div', { id:'study-content' }, 'Select a section from the left.');
+  // Track current view mode: 'topics' or 'sections'
+  let viewMode = state.study.currentTopic ? 'sections' : 'topics';
+  let currentTopic = state.study.currentTopic ? TOPIC_MAP[state.study.currentTopic] : null;
+  
+  // Initialize sidebar based on view mode
+  function updateSidebar() {
+    sidebar.innerHTML = '';
+    
+    if (viewMode === 'topics') {
+      sidebar.append(
+        h('h3', {}, 'Study Topics'),
+        h('p', { class:'small' }, 'Choose a topic to explore sections. Progress is tracked automatically.'),
+        searchInput
+      );
+    } else {
+      sidebar.append(
+        h('div', { class:'flex space-between', style:'margin-bottom: 10px;' },
+          h('button', { class:'button', onClick: () => showTopics() }, '← Back to Topics'),
+          h('span', { class:'small' }, `${currentTopic?.title || ''}`)
+        ),
+        h('h3', {}, currentTopic?.title || 'Sections'),
+        h('p', { class:'small' }, currentTopic?.description || ''),
+        searchInput
+      );
+    }
+    
+    sidebar.appendChild(list);
+  }
+
   content.append(
     h('h3', {}, 'Content'),
     studyContent
   );
-
   container.append(sidebar, content);
 
-  // Fetch and parse HTML source (guarded)
+  // Fetch and parse HTML source
   let doc;
   try{
     const res = await fetch('/data/part91.html');
@@ -139,6 +163,7 @@ async function StudyView(){
     const title = text ? `${id} - ${text}` : id;
     return { id, title };
   });
+  
   if(keys.length === 0){
     // Fallback to a minimal set if parsing failed
     keys.push({ id:'91.3', title:'91.3 - PIC Authority' });
@@ -158,21 +183,140 @@ async function StudyView(){
     updateList();
   }
 
+  function showTopics() {
+    viewMode = 'topics';
+    currentTopic = null;
+    state.study.currentTopic = null;
+    saveState(state);
+    updateSidebar();
+    updateList();
+    studyContent.innerHTML = '';
+    studyContent.appendChild(h('div', { class:'small', style:'text-align: center; padding: 40px; color: #888;' }, 'Select a topic from the left to begin studying.'));
+  }
+
+  function showTopic(topic) {
+    viewMode = 'sections';
+    currentTopic = topic;
+    state.study.currentTopic = topic.id;
+    state.study.lastTopic = topic.id;
+    saveState(state);
+    updateSidebar();
+    updateList();
+    studyContent.innerHTML = '';
+    studyContent.appendChild(
+      h('div', { class:'card' },
+        h('h3', {}, topic.title),
+        h('p', {}, topic.description),
+        h('p', { class:'small' }, `This topic contains ${topic.sections.length} sections. Select a section from the left to read its content.`)
+      )
+    );
+  }
+
   function updateList(){
     list.innerHTML = '';
-    const q = (searchInput.value || '').toLowerCase().trim();
-    const filtered = !q ? keys : keys.filter(k => k.title.toLowerCase().includes(q) || keyText.get(k.id)?.includes(q));
-    for(const k of filtered){
-      const s = h('div', { class:'card' },
-        h('div', { class:'flex space-between' },
-          h('div', {}, h('strong', {}, k.title), ' ', state.progress.studyReadSections[k.id] ? h('span', { class:'badge' }, 'Read') : ''),
-          h('button', { class:'button', onClick: () => show(k.id) }, 'Open')
-        )
+    
+    if (viewMode === 'topics') {
+      // Show topic cards
+      const topics = getTopics();
+      const q = (searchInput.value || '').toLowerCase().trim();
+      
+      if (q) {
+        // Global search across all sections with topic grouping
+        const matchedSections = keys.filter(k => 
+          k.title.toLowerCase().includes(q) || keyText.get(k.id)?.includes(q)
+        );
+        
+        if (matchedSections.length > 0) {
+          list.appendChild(h('div', { class:'small', style:'margin-bottom: 10px; color: #888;' }, 
+            `Found ${matchedSections.length} sections matching "${q}"`));
+          
+          // Group results by topic
+          const topicGroups = {};
+          for (const section of matchedSections) {
+            const topic = getTopics().find(t => t.sections.includes(section.id));
+            const topicId = topic?.id || 'other';
+            if (!topicGroups[topicId]) {
+              topicGroups[topicId] = { topic, sections: [] };
+            }
+            topicGroups[topicId].sections.push(section);
+          }
+          
+          for (const [topicId, group] of Object.entries(topicGroups)) {
+            if (group.topic) {
+              list.appendChild(h('div', { class:'small', style:'margin: 15px 0 5px; font-weight: 600; color: #ccc;' }, 
+                group.topic.title));
+            }
+            
+            for (const section of group.sections) {
+              const card = h('div', { class:'card' },
+                h('div', { class:'flex space-between' },
+                  h('div', {}, 
+                    h('strong', {}, section.title), 
+                    ' ', 
+                    state.progress.studyReadSections[section.id] ? h('span', { class:'badge' }, 'Read') : ''
+                  ),
+                  h('button', { class:'button', onClick: () => show(section.id) }, 'Open')
+                )
+              );
+              list.appendChild(card);
+            }
+          }
+        } else {
+          list.appendChild(h('div', { class:'small' }, 'No sections match your search.'));
+        }
+      } else {
+        // Show topic overview cards
+        for (const topic of topics) {
+          const progress = calculateTopicProgress(topic, state.progress.studyReadSections);
+          
+          const card = h('div', { class:'card', style:'cursor: pointer;' },
+            h('div', { onClick: () => showTopic(topic) },
+              h('div', { class:'flex space-between', style:'margin-bottom: 8px;' },
+                h('h4', { style:'margin: 0;' }, topic.title),
+                h('span', { class:'small' }, `${progress.read}/${progress.total}`)
+              ),
+              h('p', { class:'small', style:'margin: 8px 0;' }, topic.description),
+              h('div', { class:'flex space-between', style:'align-items: center;' },
+                h('div', { 
+                  class:'progress-bar',
+                  style:`background: #1a2332; border-radius: 10px; height: 6px; overflow: hidden; flex: 1; margin-right: 10px;`
+                },
+                  h('div', { 
+                    style:`background: ${progress.percentage === 100 ? '#22c55e' : '#3b82f6'}; height: 100%; width: ${progress.percentage}%; transition: width 0.3s ease;`
+                  })
+                ),
+                h('span', { class:'small', style:'color: #888;' }, `${progress.percentage}%`)
+              )
+            )
+          );
+          list.appendChild(card);
+        }
+      }
+    } else {
+      // Show sections for current topic
+      const q = (searchInput.value || '').toLowerCase().trim();
+      const topicSections = keys.filter(k => currentTopic.sections.includes(k.id));
+      const filtered = !q ? topicSections : topicSections.filter(k => 
+        k.title.toLowerCase().includes(q) || keyText.get(k.id)?.includes(q)
       );
-      list.appendChild(s);
-    }
-    if(filtered.length===0){
-      list.appendChild(h('div', { class:'small' }, 'No sections match your search.'));
+      
+      for(const k of filtered){
+        const s = h('div', { class:'card' },
+          h('div', { class:'flex space-between' },
+            h('div', {}, 
+              h('strong', {}, k.title), 
+              ' ', 
+              state.progress.studyReadSections[k.id] ? h('span', { class:'badge' }, 'Read') : ''
+            ),
+            h('button', { class:'button', onClick: () => show(k.id) }, 'Open')
+          )
+        );
+        list.appendChild(s);
+      }
+      
+      if(filtered.length === 0){
+        list.appendChild(h('div', { class:'small' }, 'No sections match your search.'));
+      }
     }
   }
 
@@ -182,6 +326,7 @@ async function StudyView(){
       studyContent.innerHTML = 'Section not found in data';
       return;
     }
+    
     // Extract the section element and a few following siblings until next numbered section id
     const frag = document.createDocumentFragment();
     const clone = sec.cloneNode(true);
@@ -193,6 +338,7 @@ async function StudyView(){
       frag.appendChild(sib.cloneNode(true));
       sib = sib.nextElementSibling;
     }
+    
     studyContent.innerHTML = '';
     studyContent.append(
       h('div', { class:'flex space-between' },
@@ -203,17 +349,28 @@ async function StudyView(){
       ),
       h('div', { class:'card' }, frag)
     );
+    
     state.lastStudy = id;
     saveState(state);
   }
 
   searchInput.addEventListener('input', updateList);
+  
+  // Initialize view
+  updateSidebar();
   updateList();
-  if(state.lastStudy){
+  
+  // Restore last state or show default
+  if (state.lastStudy && currentTopic?.sections.includes(state.lastStudy)) {
     show(state.lastStudy);
-  }else if(keys.length){
-    show(keys[0].id);
+  } else if (!currentTopic && state.study.lastTopic) {
+    // Restore last topic if we're in topic view
+    const lastTopic = TOPIC_MAP[state.study.lastTopic];
+    if (lastTopic) {
+      showTopic(lastTopic);
+    }
   }
+  
   return container;
 }
 

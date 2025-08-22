@@ -16,6 +16,11 @@ export const initialState = {
   },
   lastRoute: '#study',
   lastStudy: null,
+  // Topic navigation state
+  study: {
+    currentTopic: null, // null means showing topic list
+    lastTopic: null     // persist last selected topic
+  }
 };
 
 const KEY = 'bfr-part91-progress-v1';
@@ -36,6 +41,8 @@ export function loadState(){
   merged.progress.sectional = { ...base.progress.sectional, ...((parsed.progress||{}).sectional||{}) };
   merged.progress.runway = { ...base.progress.runway, ...((parsed.progress||{}).runway||{}) };
   merged.progress.studyReadSections = { ...base.progress.studyReadSections, ...((parsed.progress||{}).studyReadSections||{}) };
+  // Merge study topic navigation state
+  merged.study = { ...base.study, ...(parsed.study||{}) };
   return merged;
   }catch{
     return structuredClone(initialState);
