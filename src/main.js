@@ -740,6 +740,7 @@ function QuizView(){
   let q = [];
   let idx = 0; let correct = 0; let selected = null; let showFeedback = false;
   let currentChoices = [];
+  let questionCount = 6; // Store question count for restart functionality
 
   const controls = h('div', { class:'flex' },
     h('label', { class:'small' }, 'Questions: '),
@@ -759,7 +760,13 @@ function QuizView(){
   );
 
   function start(){
-    const n = parseInt(document.getElementById('q-count').value, 10) || 6;
+    const qCountElement = document.getElementById('q-count');
+    if (qCountElement) {
+      // Initial start: read from select element and store for restart
+      questionCount = parseInt(qCountElement.value, 10) || 6;
+    }
+    // Use stored question count (works for both initial start and restart)
+    const n = questionCount;
     q = shuffle([...all]).slice(0, n);
   idx = 0; correct = 0; selected = null; showFeedback = false; currentChoices = [];
     renderQ();
