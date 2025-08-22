@@ -414,18 +414,31 @@ function getFlashcardDecks(){
       title: 'Emergency Procedures',
       cards: [
         { q: 'What authority does the PIC have during an in-flight emergency?', a: 'May deviate from any rule to the extent required (91.3(b)).' },
+        { q: 'You encounter unexpected IMC conditions during VFR flight. What authority do you have?', a: 'Authority to deviate from VFR rules to the extent required for safety, including requesting emergency clearance (91.3(b)).' },
+        { q: 'During an emergency, are you required to obtain ATC clearance before deviating from regulations?', a: 'No. The PIC may deviate from any rule to the extent required, then report as soon as possible (91.3(b)).' },
+        { q: 'Your transponder fails while in Class C airspace. What should you do?', a: 'Request ATC authorization to continue operations or depart the airspace. ATC may authorize deviations for equipment failures (91.215(d)).' },
+        { q: 'Engine failure over congested area - can you descend below minimum safe altitude?', a: 'Yes, emergency authority allows deviation from minimum altitude rules when necessary for safety (91.3(b), 91.119).' }
       ]
     },
     'alcohol-drugs': {
       title: 'Alcohol & Drugs',
       cards: [
         { q: 'Minimum time between drinking alcohol and acting as a crewmember?', a: '8 hours, and no BAC ≥ 0.04 (91.17).' },
+        { q: 'What is the maximum blood alcohol content for crew members?', a: 'Less than 0.04% BAC (91.17(a)(4)).' },
+        { q: 'Can you act as PIC if you had 2 beers 7 hours ago and feel fine?', a: 'No. Must wait at least 8 hours from "bottle to throttle" regardless of how you feel (91.17(a)(1)).' },
+        { q: 'You took prescribed medication that affects your performance. Can you fly?', a: 'No. Cannot act as crewmember while using any drug that affects faculties contrary to safety (91.17(a)(2)).' },
+        { q: 'What if you refuse an alcohol or drug test after an incident?', a: 'Refusal is grounds for denial or revocation of your certificate, same as a positive test (91.17(c)).' }
       ]
     },
     'preflight': {
       title: 'Preflight Planning',
       cards: [
         { q: 'Preflight info required for any flight?', a: 'Runway lengths; takeoff/landing distances appropriate to the aircraft (91.103(b)).' },
+        { q: 'What weather information is required for all flights?', a: 'Current and forecast weather for departure, route, and destination areas (91.103(a)).' },
+        { q: 'Planning a 150nm cross-country. What additional info is required?', a: 'Alternatives if flight cannot be completed, fuel requirements, and known traffic delays (91.103(b)).' },
+        { q: 'You plan to depart VFR with fuel to reach destination plus 25 minutes. Legal?', a: 'No. Day VFR requires destination fuel plus 30 minutes reserve at normal cruise (91.151(a)).' },
+        { q: 'Night VFR fuel requirement is how many minutes reserve?', a: '45 minutes at normal cruise power setting (91.151(b)).' },
+        { q: 'What NOTAMs must you check before flight?', a: 'All NOTAMs for departure airport, destination, and planned route of flight (91.103(b)).' }
       ]
     },
     'right-of-way': {
@@ -433,6 +446,11 @@ function getFlashcardDecks(){
       cards: [
         { q: 'Right-of-way when converging (same category)?', a: 'Aircraft to the right has right-of-way (91.113(d)).' },
         { q: 'Who has right-of-way: balloon vs airplane?', a: 'Balloon (91.113(d)(1)).' },
+        { q: 'Two aircraft approaching head-on. What should each pilot do?', a: 'Both alter course to the right (91.113(e)).' },
+        { q: 'Aircraft being overtaken vs overtaking aircraft - who has right-of-way?', a: 'Aircraft being overtaken has right-of-way. Overtaking aircraft must alter course to the right (91.113(f)).' },
+        { q: 'Glider vs airplane in normal operations (not emergency) - who yields?', a: 'Airplane yields to glider (91.113(d)(2)).' },
+        { q: 'Aircraft approaching to land vs aircraft on final approach - who has right-of-way?', a: 'Aircraft on final approach has right-of-way, but cannot take advantage to cut in front (91.113(g)).' },
+        { q: 'What if an aircraft is in distress?', a: 'Aircraft in distress has right-of-way over all other aircraft (91.113(c)).' }
       ]
     },
     'operations': {
@@ -441,6 +459,11 @@ function getFlashcardDecks(){
         { q: 'Careless or reckless operation prohibition?', a: 'May not operate in a manner that endangers life or property (91.13).' },
         { q: 'Seat belt/shoulder harness requirement for takeoff/landing?', a: 'Approved seat/berth with belt, shoulder harness if installed (91.107).' },
         { q: 'Operating in Class G airport vicinity—turn direction for airplanes?', a: 'Left traffic unless otherwise indicated (91.126(b)(1)).' },
+        { q: 'Can passengers move about the cabin during taxi, takeoff, and landing?', a: 'No. Each person must occupy approved seat with safety belt fastened (91.107(a)).' },
+        { q: 'When must shoulder harnesses be used?', a: 'During takeoff and landing if installed, unless physically unable (91.107(a)(3)).' },
+        { q: 'Can you operate an aircraft with known inoperative equipment?', a: 'Only if permitted by MEL or 91.213(d) inoperative equipment procedures.' },
+        { q: 'Formation flight is prohibited except when?', a: 'When by arrangement with the pilot-in-command of each aircraft (91.111).' },
+        { q: 'When is dropping objects from aircraft prohibited?', a: 'When it creates hazard to persons or property on the surface (91.15).' }
       ]
     },
     'airspace-speed': {
@@ -449,12 +472,106 @@ function getFlashcardDecks(){
         { q: 'Max indicated airspeed below 10,000 MSL unless authorized?', a: '250 knots IAS (91.117(a)).' },
         { q: 'Min safe altitude over congested area?', a: '1,000 ft above highest obstacle within 2,000 ft horizontal (91.119(b)).' },
         { q: 'When operating at/above 18,000 MSL, altimeter setting?', a: '29.92" Hg (91.121(a)(2)).' },
+        { q: 'Max speed in Class D airspace within 4nm of primary airport?', a: '200 knots IAS at or below 2,500 feet AGL (91.117(b)).' },
+        { q: 'Min safe altitude over sparsely populated areas?', a: '500 feet above the surface, except over open water or sparsely populated areas (91.119(c)).' },
+        { q: 'Can you fly below 500 feet AGL over sparsely populated areas?', a: 'Yes, if not closer than 500 feet to any person, vessel, vehicle, or structure (91.119(c)).' },
+        { q: 'Minimum altitude over Yellowstone National Park?', a: '2,000 feet AGL (91.119 and park regulations).' },
+        { q: 'Flying at 12,500 MSL cabin pressure altitude for 45 minutes. Oxygen required?', a: 'Yes. Required crew oxygen above 12,500 feet for more than 30 minutes (91.211(a)(2)).' }
       ]
     },
     'atc': {
       title: 'ATC Communications',
       cards: [
         { q: 'ATC light signal: Steady green (in flight)?', a: 'Cleared to land (91.125).' },
+        { q: 'ATC light signal: Flashing green (in flight)?', a: 'Return for landing (to be followed by steady green at proper time) (91.125).' },
+        { q: 'ATC light signal: Steady red (in flight)?', a: 'Give way to other aircraft and continue circling (91.125).' },
+        { q: 'ATC light signal: Flashing red (in flight)?', a: 'Airport unsafe—do not land (91.125).' },
+        { q: 'ATC light signal: Flashing white (in flight)?', a: 'No specific meaning assigned (91.125).' },
+        { q: 'Your radio fails at non-towered airport. What do you do?', a: 'Continue normal pattern operations while maintaining vigilant watch for other traffic (91.126(b)).' },
+        { q: 'Radio failure in controlled airspace VFR - what are your options?', a: 'Land at nearest suitable airport with available communications or continue if weather permits (91.185).' }
+      ]
+    },
+    'equipment': {
+      title: 'Required Equipment',
+      cards: [
+        { q: 'Required equipment for VFR day flight (acronym ATOMATOFLAMES)?', a: 'Airspeed, Tachometer, Oil pressure, Manifold pressure, Altimeter, Temperature, Oil temp, Fuel gauge, Landing gear position, Anti-collision lights, Magnetic compass, ELT, Safety belts (91.205(b)).' },
+        { q: 'Additional equipment required for VFR night flight?', a: 'Position lights, anti-collision light system, landing light (for hire), spare fuses (91.205(c)).' },
+        { q: 'When is a transponder required?', a: 'Class A, B, C airspace; above Class C veil; within 30nm of Class B primary; above 10,000 MSL (91.215).' },
+        { q: 'ELT inspection/testing requirements?', a: 'Every 12 calendar months; test only during first 5 minutes of hour; limit to 3 audio sweeps (91.207).' },
+        { q: 'Your attitude indicator becomes inoperative. Can you fly VFR?', a: 'Only if aircraft has no MEL and equipment can be safely removed/placarded per 91.213(d).' },
+        { q: 'What if your magnetic compass is inoperative for day VFR?', a: 'Cannot fly. Magnetic direction indicator is required equipment that cannot be deferred (91.205(b)).' },
+        { q: 'ADS-B Out requirement applies to which airspace?', a: 'Same as transponder requirements - Class A, B, C, above 10,000 MSL, etc. (91.225).' }
+      ]
+    },
+    'weather-vis': {
+      title: 'Weather & Visibility',
+      cards: [
+        { q: 'VFR visibility requirement in Class E above 1,200 AGL?', a: '3 statute miles (91.155(a)).' },
+        { q: 'VFR cloud clearances in Class E above 1,200 AGL?', a: '500 feet below, 1,000 feet above, 2,000 feet horizontal (91.155(a)).' },
+        { q: 'VFR minimums in Class G below 1,200 AGL during day?', a: '1 mile visibility, clear of clouds (91.155(b)).' },
+        { q: 'Can you takeoff VFR with a 800-foot overcast?', a: 'No. Need at least 1,000 feet ceiling for VFR operations (basic VFR minimums).' },
+        { q: 'Flying VFR at 2,500 MSL in Class G airspace. Visibility and cloud clearances?', a: '1 mile vis, 500 below/1,000 above/2,000 horizontal if above 1,200 AGL (91.155(b)).' },
+        { q: 'Special VFR minimum visibility in controlled airspace?', a: '1 statute mile visibility and clear of clouds (91.157).' },
+        { q: 'Can you request Special VFR at night?', a: 'Only if pilot and aircraft are IFR qualified and current (91.157(b)).' },
+        { q: 'VFR minimums in Class B airspace?', a: '3 statute miles visibility, clear of clouds (91.155(a)).' },
+        { q: 'VFR minimums in Class C airspace?', a: '3 statute miles visibility, 500 below/1,000 above/2,000 horizontal cloud clearance (91.155(a)).' },
+        { q: 'VFR minimums in Class D airspace?', a: '3 statute miles visibility, 500 below/1,000 above/2,000 horizontal cloud clearance (91.155(a)).' },
+        { q: 'Flying at 11,500 MSL in Class G airspace. What are VFR minimums?', a: '5 statute miles visibility, 1,000 above/1,000 below/1 mile horizontal cloud clearance (91.155(b)).' },
+        { q: 'You encounter clouds at your altitude while flying VFR. Nearest VFR airport is 50 miles ahead. Legal options?', a: 'Turn around, climb, descend, or deviate to maintain VFR cloud clearances. Cannot enter clouds VFR (91.155).' },
+        { q: 'What weather phenomenon requires an immediate 180-degree turn during VFR flight?', a: 'Any condition that prevents maintaining VFR minimums - clouds, precipitation, reduced visibility, etc.' },
+        { q: 'METAR shows BKN010. Can you depart VFR?', a: 'No. Broken layer at 1,000 feet prevents meeting minimum ceiling requirements for VFR flight.' },
+        { q: 'Can you descend through a thin cloud layer if you can see the ground?', a: 'No. VFR flight must remain clear of clouds at all times (91.155).' }
+      ]
+    },
+    'scenarios': {
+      title: 'Real-World Scenarios',
+      cards: [
+        { q: 'Beautiful sunny day, planning flight to beach. Your passenger brings a cooler with beer. Can they drink during flight?', a: 'No. No person may drink alcohol aboard aircraft (91.17(a)(3)). Only exception is properly served alcohol by certificate holder.' },
+        { q: 'Departing for weekend trip, notice slight oil leak during preflight. Weather is severe clear, 20-minute flight. Decision?', a: 'Do not fly. Continuing with known mechanical issues could constitute careless operation (91.13). Have it inspected first.' },
+        { q: 'Flying to airshow, ATC clears you "direct to airport, report 10-mile final." Your GPS shows 12 miles. Can you report now?', a: 'No. Must be accurate in position reports. Wait until actually 10 miles from airport before reporting.' },
+        { q: 'Perfect weather for night flight to dinner. Landing light burned out during taxi. Can you continue?', a: 'Yes, if not flying for hire. Landing lights only required for night flights "for hire" (91.205(c)(4)).' },
+        { q: 'Cross-country flight, 30 miles from destination you see thunderstorms ahead. Fuel shows 20 minutes remaining. Options?', a: 'Divert immediately to nearest airport. You do not have legal fuel reserves (30 min day/45 min night) (91.151).' },
+        { q: 'Flying over your house at 1,200 AGL to show family. House is in subdivision. Legal altitude?', a: 'No. Over congested area need 1,000 feet above highest obstacle within 2,000 feet horizontally (91.119(b)).' },
+        { q: 'Practicing slow flight, another aircraft appears close off your right wing. Who has right-of-way?', a: 'The other aircraft has right-of-way as it is to your right. You must give way (91.113(d)).' },
+        { q: 'Radio fails while taxiing at towered airport. Ground control cannot hear you. What should you do?', a: 'Continue to watch for light gun signals from tower. ATC will use light signals to direct taxi operations (91.125).' },
+        { q: 'Planning sunrise departure for photography flight. Calculating civil twilight at 6:30 AM, but weather shows overcast at 1,000 feet. Legal to depart VFR?', a: 'No. Need at least 1,000 foot ceiling for VFR operations. Overcast at 1,000 feet means you cannot maintain VFR cloud clearances.' },
+        { q: 'Your instructor wants to practice unusual attitudes under the hood. You\'re not instrument rated. Can you legally act as safety pilot?', a: 'Yes, if qualified in aircraft category/class and occupy seat with adequate vision and controls (91.109(c)).' },
+        { q: 'Flying to a fly-in, you see a helicopter approaching from your left at the same altitude. Both of you are converging on the airport. Who yields?', a: 'You yield. Helicopter has right-of-way over airplane in normal operations (91.113(d)(3)).' },
+        { q: 'Planned 3-hour cross-country, but 90 minutes into flight your passenger gets airsick and wants to return immediately. Fuel shows 3.5 hours remaining. Decision?', a: 'Return as requested. PIC authority includes passenger comfort and safety. You have adequate fuel reserves (91.3(a)).' },
+        { q: 'On approach to non-towered airport, you hear another aircraft call "final" as you turn base. You cannot see them. What should you do?', a: 'Give way and extend your pattern. Aircraft on final approach has right-of-way (91.113(g)).' },
+        { q: 'Beautiful day for pattern practice. After 5 touch-and-goes, tower asks you to "make this a full stop, we have traffic." You need 3 more landings for currency. Must you comply?', a: 'Yes. ATC instructions must be followed. You can request to continue after the traffic passes or return later (91.123(b)).' },
+        { q: 'Flying over a remote area at 6,500 MSL when engine starts running rough. Nearest airport is 40 miles away. What altitude considerations apply?', a: 'You may descend below minimum safe altitude if required for emergency landing. Emergency authority allows deviation (91.3(b), 91.119).' },
+        { q: 'Departing busy Class D airport, ground control clears you to taxi to runway 27 via Alpha. You notice construction blocking Alpha taxiway. What should you do?', a: 'Stop and request alternate taxi route from ground control. Never deviate from taxi clearance without permission (91.129(i)).' }
+      ]
+    },
+    'certificates': {
+      title: 'Certificates & Currency',
+      cards: [
+        { q: 'What documents must you carry as PIC?', a: 'Pilot certificate, medical certificate, and photo ID. Aircraft must have airworthiness certificate, registration, and operating limitations (91.203).' },
+        { q: 'To carry passengers, what currency is required?', a: '3 takeoffs and landings within 90 days in same category/class. Night currency requires night landings to full stop (91.57).' },
+        { q: 'Your BFR expired 2 months ago. Can you fly solo to practice for checkride?', a: 'No. Cannot act as PIC without current BFR, even solo. Need authorized instructor or BFR before solo flight (91.56).' },
+        { q: 'Flight review (BFR) consists of what minimum requirements?', a: '1 hour ground training and 1 hour flight training with authorized instructor within preceding 24 months (91.56).' },
+        { q: 'Medical certificate expires in 2 days. Can you exercise pilot privileges after expiration?', a: 'No. Medical certificate must be current to exercise pilot privileges (91.61).' },
+        { q: 'High performance aircraft checkout - what is required?', a: 'Ground and flight training from authorized instructor in aircraft with more than 200 HP (91.61(a)(5)).' },
+        { q: 'Can you act as safety pilot if your medical certificate expired last month?', a: 'No. Safety pilot must hold at least a current medical certificate appropriate for the flight (91.109(c)).' },
+        { q: 'Your night currency expired 3 weeks ago. Can you take passengers on a day flight?', a: 'Yes. Night currency only applies to carrying passengers at night. Day currency is separate (91.57).' },
+        { q: 'Complex aircraft checkout requirements for insurance purposes - is this required by FAR?', a: 'No specific FAR requirement, but insurance may require it. Good practice for safety.' },
+        { q: 'Can you log PIC time while flying with a CFI who is acting as PIC?', a: 'Only if you are sole manipulator of controls and rated in aircraft category/class (61.51(e)).' }
+      ]
+    },
+    'flight-planning': {
+      title: 'Flight Planning & Navigation',
+      cards: [
+        { q: 'Cross-country flight planning: What constitutes a cross-country flight for private pilot experience?', a: 'Flight with landing more than 50nm straight-line distance from departure point (61.1).' },
+        { q: 'Planning flight to airport with only GPS approach. Your aircraft has no GPS. Can you legally fly there?', a: 'Yes, but you must have alternate means of navigation and cannot use the GPS approach (91.205).' },
+        { q: 'Your planned route takes you through Class B airspace. What is required?', a: 'ATC clearance and Mode C transponder. Pilot certificate must have specific Class B endorsement if student (91.131).' },
+        { q: 'Filing VFR flight plan: When is it required?', a: 'Never required for VFR domestic flights, but highly recommended for safety, especially over remote areas.' },
+        { q: 'True course vs magnetic course - which do you use for navigation?', a: 'Magnetic course for navigation. True course is only used for initial calculations and wind triangle.' },
+        { q: 'Dead reckoning navigation fails due to stronger headwind than forecast. Legal options?', a: 'Divert to nearest suitable airport, use electronic navigation aids, or contact ATC for assistance.' },
+        { q: 'VOR station identified as out of service on NOTAM. Can you still use it for emergency navigation?', a: 'Use with extreme caution. May provide rough guidance but reliability is questionable.' },
+        { q: 'Flight following service: Can ATC deny your request for VFR flight following?', a: 'Yes. Flight following is workload permitting and may be denied due to traffic volume.' },
+        { q: 'Pilotage navigation over unfamiliar terrain at night. Recommended backup navigation method?', a: 'Electronic navigation (GPS, VOR) essential. Pilotage alone is unreliable at night.' },
+        { q: 'Lost procedures: You are unsure of your position in controlled airspace. What should you do?', a: 'Contact ATC immediately, confess your situation, and follow their instructions. Squawk 7700 if emergency.' }
       ]
     }
   };
