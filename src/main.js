@@ -1050,13 +1050,155 @@ function runwaySvg(kind){
   return svg;
 }
 
+// Progress Chart Generation Functions
+function createProgressBar(percentage, width = 200, height = 8) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  
+  // Background bar
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('width', width);
+  bg.setAttribute('height', height);
+  bg.setAttribute('rx', height / 2);
+  bg.setAttribute('fill', 'rgba(122,140,170,0.2)');
+  
+  // Progress fill
+  const fill = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  fill.setAttribute('width', Math.max(0, Math.min(100, percentage)) / 100 * width);
+  fill.setAttribute('height', height);
+  fill.setAttribute('rx', height / 2);
+  fill.setAttribute('fill', 'url(#progressGradient)');
+  
+  // Gradient definition
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+  gradient.setAttribute('id', 'progressGradient');
+  
+  const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+  stop1.setAttribute('offset', '0%');
+  stop1.setAttribute('stop-color', '#58a6ff');
+  
+  const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+  stop2.setAttribute('offset', '100%');
+  stop2.setAttribute('stop-color', '#22c55e');
+  
+  gradient.appendChild(stop1);
+  gradient.appendChild(stop2);
+  defs.appendChild(gradient);
+  
+  svg.appendChild(defs);
+  svg.appendChild(bg);
+  svg.appendChild(fill);
+  
+  return svg;
+}
+
+function createPieChart(correct, total, size = 60) {
+  if (total === 0) total = 1; // Avoid division by zero
+  
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', size);
+  svg.setAttribute('height', size);
+  svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+  
+  const radius = size / 2 - 2;
+  const centerX = size / 2;
+  const centerY = size / 2;
+  
+  // Background circle
+  const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bgCircle.setAttribute('cx', centerX);
+  bgCircle.setAttribute('cy', centerY);
+  bgCircle.setAttribute('r', radius);
+  bgCircle.setAttribute('fill', 'rgba(122,140,170,0.2)');
+  svg.appendChild(bgCircle);
+  
+  if (correct > 0) {
+    const percentage = correct / total;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDasharray = `${percentage * circumference} ${circumference}`;
+    
+    // Progress arc
+    const progressCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    progressCircle.setAttribute('cx', centerX);
+    progressCircle.setAttribute('cy', centerY);
+    progressCircle.setAttribute('r', radius);
+    progressCircle.setAttribute('fill', 'transparent');
+    progressCircle.setAttribute('stroke', '#22c55e');
+    progressCircle.setAttribute('stroke-width', '3');
+    progressCircle.setAttribute('stroke-dasharray', strokeDasharray);
+    progressCircle.setAttribute('stroke-dashoffset', circumference / 4); // Start from top
+    progressCircle.setAttribute('transform', `rotate(-90 ${centerX} ${centerY})`);
+    svg.appendChild(progressCircle);
+  }
+  
+  // Center text
+  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', centerX);
+  text.setAttribute('y', centerY + 4);
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('font-size', '12');
+  text.setAttribute('fill', '#e6edf7');
+  text.textContent = `${Math.round(correct / total * 100)}%`;
+  svg.appendChild(text);
+  
+  return svg;
+}
+
+function createBarChart(values, labels, width = 200, height = 60) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  
+  const maxValue = Math.max(...values, 1);
+  const barWidth = width / values.length * 0.8;
+  const barSpacing = width / values.length * 0.2;
+  
+  values.forEach((value, index) => {
+    const barHeight = (value / maxValue) * (height - 20);
+    const x = index * (barWidth + barSpacing) + barSpacing / 2;
+    const y = height - barHeight - 10;
+    
+    // Bar
+    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bar.setAttribute('x', x);
+    bar.setAttribute('y', y);
+    bar.setAttribute('width', barWidth);
+    bar.setAttribute('height', barHeight);
+    bar.setAttribute('fill', index === values.length - 1 ? '#22c55e' : '#58a6ff');
+    bar.setAttribute('rx', '2');
+    svg.appendChild(bar);
+    
+    // Value label
+    if (value > 0) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', x + barWidth / 2);
+      text.setAttribute('y', y - 4);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('font-size', '10');
+      text.setAttribute('fill', '#e6edf7');
+      text.textContent = value;
+      svg.appendChild(text);
+    }
+  });
+  
+  return svg;
+}
+
 // Progress summary
 function ProgressView(){
   const p = state.progress;
   const total = Object.keys(p.studyReadSections).length;
+  const estimatedTotalSections = 286; // Total sections in Part 91
+  const studyProgress = total > 0 ? (total / estimatedTotalSections) * 100 : 0;
+  
   const exportBtn = h('button', { class:'button', onClick: exportProgress }, 'Export JSON');
   const importInput = h('input', { type:'file', accept:'application/json', style:'display:none' });
   const importBtn = h('button', { class:'button', onClick: () => importInput.click() }, 'Import JSON');
+  
   importInput.addEventListener('change', async (e) => {
     const file = e.target.files?.[0];
     if(!file) return;
@@ -1074,17 +1216,75 @@ function ProgressView(){
     }
   });
 
+  // Create progress cards with graphs
+  const studyCard = h('div', { class:'card progress-card' },
+    h('h3', {}, 'Study'),
+    h('div', { class:'progress-stats' },
+      h('span', {}, `${total} sections read`),
+      h('span', { class:'small' }, `${Math.round(studyProgress)}%`)
+    ),
+    h('div', { class:'progress-graph' }, createProgressBar(studyProgress))
+  );
+
+  const flashcardTotal = Math.max(1, p.flashcards.seen);
+  const flashcardAccuracy = flashcardTotal > 0 ? (p.flashcards.correct / flashcardTotal) * 100 : 0;
+  const flashcardCard = h('div', { class:'card progress-card' },
+    h('h3', {}, 'Flashcards'),
+    h('div', { class:'progress-stats' },
+      h('span', {}, `${p.flashcards.correct}/${flashcardTotal} correct`),
+      h('span', { class:'small' }, `${Math.round(flashcardAccuracy)}%`)
+    ),
+    h('div', { class:'progress-graph pie-chart' }, createPieChart(p.flashcards.correct, flashcardTotal))
+  );
+
+  const quizCard = h('div', { class:'card progress-card' },
+    h('h3', {}, 'Quizzes'),
+    h('div', { class:'progress-stats' },
+      h('span', {}, `Best ${p.quizzes.best}%`),
+      h('span', { class:'small' }, `${p.quizzes.attempts} attempts`)
+    ),
+    h('div', { class:'progress-graph' }, 
+      p.quizzes.attempts > 0 ? createProgressBar(p.quizzes.best) : 
+      h('div', { class:'small', style:'text-align:center;padding:20px;color:var(--muted)' }, 'No quiz attempts yet')
+    )
+  );
+
+  const sectionalTotal = Math.max(1, p.sectional.attempts);
+  const sectionalAccuracy = sectionalTotal > 0 ? (p.sectional.correct / sectionalTotal) * 100 : 0;
+  const sectionalCard = h('div', { class:'card progress-card' },
+    h('h3', {}, 'Sectional Symbols'),
+    h('div', { class:'progress-stats' },
+      h('span', {}, `${p.sectional.correct}/${sectionalTotal} correct`),
+      h('span', { class:'small' }, `${Math.round(sectionalAccuracy)}%`)
+    ),
+    h('div', { class:'progress-graph pie-chart' }, createPieChart(p.sectional.correct, sectionalTotal))
+  );
+
+  const runwayTotal = Math.max(1, p.runway.attempts);
+  const runwayAccuracy = runwayTotal > 0 ? (p.runway.correct / runwayTotal) * 100 : 0;
+  const runwayCard = h('div', { class:'card progress-card' },
+    h('h3', {}, 'Runway Markings'),
+    h('div', { class:'progress-stats' },
+      h('span', {}, `${p.runway.correct}/${runwayTotal} correct`),
+      h('span', { class:'small' }, `${Math.round(runwayAccuracy)}%`)
+    ),
+    h('div', { class:'progress-graph pie-chart' }, createPieChart(p.runway.correct, runwayTotal))
+  );
+
+  const dataCard = h('div', { class:'card' },
+    h('h3', {}, 'Data'),
+    h('div', { class:'flex' }, exportBtn, importBtn, importInput),
+    h('button', { class:'button', onClick: resetProgress, style:'margin-top:8px' }, 'Clear Progress')
+  );
+
   return panel('Your Progress', null,
     h('div', { class:'grid cols-3' },
-      h('div', { class:'card' }, h('h3', {}, 'Study'), h('p', {}, `${total} sections marked read`)),
-      h('div', { class:'card' }, h('h3', {}, 'Flashcards'), h('p', {}, `${p.flashcards.correct}/${Math.max(1,p.flashcards.seen)} correct`)),
-      h('div', { class:'card' }, h('h3', {}, 'Quizzes'), h('p', {}, `Best ${p.quizzes.best}% • Attempts ${p.quizzes.attempts}`)),
-      h('div', { class:'card' }, h('h3', {}, 'Sectional Symbols'), h('p', {}, `${p.sectional.correct}/${Math.max(1,p.sectional.attempts)} correct`)),
-      h('div', { class:'card' }, h('h3', {}, 'Runway Markings'), h('p', {}, `${p.runway.correct}/${Math.max(1,p.runway.attempts)} correct`)),
-      h('div', { class:'card' }, h('h3', {}, 'Data'),
-        h('div', { class:'flex' }, exportBtn, importBtn, importInput),
-        h('button', { class:'button', onClick: resetProgress, style:'margin-top:8px' }, 'Clear Progress')
-      )
+      studyCard,
+      flashcardCard,
+      quizCard,
+      sectionalCard,
+      runwayCard,
+      dataCard
     )
   );
 }
