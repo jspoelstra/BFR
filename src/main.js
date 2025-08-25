@@ -1,4 +1,5 @@
 import { loadState, saveState } from './state.js';
+import { AIRPORT_SIGNS, SIGN_CATEGORIES, getSignsByCategory } from './airport-signs-data.js';
 
 const app = document.getElementById('app');
 const state = loadState();
@@ -203,11 +204,53 @@ async function StudyView(){
     updateSidebar();
     updateList();
     studyContent.innerHTML = '';
+    
+    if (topic.id === 'airport_signs') {
+      // Special handling for airport signs topic
+      studyContent.appendChild(
+        h('div', { class:'card' },
+          h('h3', {}, topic.title),
+          h('p', {}, topic.description),
+          h('p', { class:'small' }, `This topic contains ${AIRPORT_SIGNS.length} airport signs and markings. Select a sign from the left to view details.`)
+        )
+      );
+    } else {
+      studyContent.appendChild(
+        h('div', { class:'card' },
+          h('h3', {}, topic.title),
+          h('p', {}, topic.description),
+          h('p', { class:'small' }, `This topic contains ${topic.sections.length} sections. Select a section from the left to read its content.`)
+        )
+      );
+    }
+  }
+
+  function showAirportSign(sign) {
+    // Mark sign as read
+    if (!state.progress.airportSigns) {
+      state.progress.airportSigns = {};
+    }
+    state.progress.airportSigns[sign.id] = true;
+    saveState(state);
+    
+    // Update the list to reflect the read status
+    updateList();
+    
+    // Show sign details
+    studyContent.innerHTML = '';
     studyContent.appendChild(
-      h('div', { class:'card' },
-        h('h3', {}, topic.title),
-        h('p', {}, topic.description),
-        h('p', { class:'small' }, `This topic contains ${topic.sections.length} sections. Select a section from the left to read its content.`)
+      h('div', { class: 'card' },
+        h('div', { class: 'flex space-between', style: 'margin-bottom: 16px;' },
+          h('h3', { style: 'margin: 0;' }, `${sign.number}. ${sign.name}`),
+          h('span', { class: 'badge', style: `background-color: ${SIGN_CATEGORIES[sign.category]?.color || '#6c757d'};` }, sign.category)
+        ),
+        h('div', { style: 'text-align: center; margin-bottom: 16px;' },
+          imageOrFallback(sign.image, h('div', { class: 'small' }, 'Image not found: ' + sign.image))
+        ),
+        h('p', { style: 'font-size: 1.1em; line-height: 1.6;' }, sign.meaning),
+        h('div', { class: 'small', style: 'margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);' },
+          h('strong', {}, 'Keywords: '), sign.keywords.join(', ')
+        )
       )
     );
   }
@@ -267,7 +310,7 @@ async function StudyView(){
       } else {
         // Show topic overview cards
         for (const topic of topics) {
-          const progress = calculateTopicProgress(topic, state.progress.studyReadSections);
+          const progress = calculateTopicProgress(topic, state.progress.studyReadSections, state.progress.airportSigns);
           
           const card = h('div', { class:'card', style:'cursor: pointer;' },
             h('div', { onClick: () => showTopic(topic) },
@@ -295,27 +338,58 @@ async function StudyView(){
     } else {
       // Show sections for current topic
       const q = (searchInput.value || '').toLowerCase().trim();
-      const topicSections = keys.filter(k => currentTopic.sections.includes(k.id));
-      const filtered = !q ? topicSections : topicSections.filter(k => 
-        k.title.toLowerCase().includes(q) || keyText.get(k.id)?.includes(q)
-      );
       
-      for(const k of filtered){
-        const s = h('div', { class:'card' },
-          h('div', { class:'flex space-between' },
-            h('div', {}, 
-              h('strong', {}, k.title), 
-              ' ', 
-              state.progress.studyReadSections[k.id] ? h('span', { class:'badge' }, 'Read') : ''
-            ),
-            h('button', { class:'button', onClick: () => show(k.id) }, 'Open')
-          )
+      if (currentTopic.id === 'airport_signs') {
+        // Special handling for airport signs
+        const filtered = !q ? AIRPORT_SIGNS : AIRPORT_SIGNS.filter(sign => 
+          sign.name.toLowerCase().includes(q) || 
+          sign.meaning.toLowerCase().includes(q) ||
+          sign.category.toLowerCase().includes(q) ||
+          sign.keywords.some(keyword => keyword.toLowerCase().includes(q))
         );
-        list.appendChild(s);
-      }
-      
-      if(filtered.length === 0){
-        list.appendChild(h('div', { class:'small' }, 'No sections match your search.'));
+        
+        for(const sign of filtered){
+          const s = h('div', { class:'card' },
+            h('div', { class:'flex space-between' },
+              h('div', {}, 
+                h('strong', {}, `${sign.number}. ${sign.name}`),
+                h('div', { class:'small', style:'margin-top: 4px; color: #888;' }, sign.category),
+                ' ', 
+                state.progress.airportSigns?.[sign.id] ? h('span', { class:'badge' }, 'Read') : ''
+              ),
+              h('button', { class:'button', onClick: () => showAirportSign(sign) }, 'View')
+            )
+          );
+          list.appendChild(s);
+        }
+        
+        if(filtered.length === 0){
+          list.appendChild(h('div', { class:'small' }, 'No signs match your search.'));
+        }
+      } else {
+        // Regular Part 91 sections
+        const topicSections = keys.filter(k => currentTopic.sections.includes(k.id));
+        const filtered = !q ? topicSections : topicSections.filter(k => 
+          k.title.toLowerCase().includes(q) || keyText.get(k.id)?.includes(q)
+        );
+        
+        for(const k of filtered){
+          const s = h('div', { class:'card' },
+            h('div', { class:'flex space-between' },
+              h('div', {}, 
+                h('strong', {}, k.title), 
+                ' ', 
+                state.progress.studyReadSections[k.id] ? h('span', { class:'badge' }, 'Read') : ''
+              ),
+              h('button', { class:'button', onClick: () => show(k.id) }, 'Open')
+            )
+          );
+          list.appendChild(s);
+        }
+        
+        if(filtered.length === 0){
+          list.appendChild(h('div', { class:'small' }, 'No sections match your search.'));
+        }
       }
     }
   }
