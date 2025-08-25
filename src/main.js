@@ -544,11 +544,26 @@ function FlashcardsView(){
     const cardIndex = currentCards[i % currentCards.length];
     const c = currentDeck.cards[cardIndex];
     cardHost.innerHTML = '';
-    cardHost.append(
-      h('div', { class:'small' }, `Card ${i+1}/${currentCards.length} • ${currentDeck.title}`),
-      h('h3', {}, showAnswer ? 'Answer' : 'Question'),
-      h('div', {}, showAnswer ? c.a : c.q)
-    );
+    
+    // Handle image-based flashcards
+    if (c.isImage) {
+      const questionContent = showAnswer 
+        ? h('div', {}, c.a)
+        : imageOrFallback(c.q, h('div', { class: 'small' }, 'Image not found: ' + c.q));
+      
+      cardHost.append(
+        h('div', { class:'small' }, `Card ${i+1}/${currentCards.length} • ${currentDeck.title}`),
+        h('h3', {}, showAnswer ? 'Answer' : 'What is this sign/marking?'),
+        h('div', { style: showAnswer ? '' : 'text-align: center;' }, questionContent)
+      );
+    } else {
+      // Standard text-based flashcards
+      cardHost.append(
+        h('div', { class:'small' }, `Card ${i+1}/${currentCards.length} • ${currentDeck.title}`),
+        h('h3', {}, showAnswer ? 'Answer' : 'Question'),
+        h('div', {}, showAnswer ? c.a : c.q)
+      );
+    }
   }
 
   function flip(){ 
@@ -804,6 +819,16 @@ function getFlashcardDecks(){
         { q: 'Pilotage navigation over unfamiliar terrain at night. Recommended backup navigation method?', a: 'Electronic navigation (GPS, VOR) essential. Pilotage alone is unreliable at night.' },
         { q: 'Lost procedures: You are unsure of your position in controlled airspace. What should you do?', a: 'Contact ATC immediately, confess your situation, and follow their instructions. Squawk 7700 if emergency.' }
       ]
+    },
+    'airport-signs': {
+      title: 'Airport Signs & Markings',
+      cards: AIRPORT_SIGNS.map(sign => ({
+        q: sign.image,
+        a: `${sign.name}: ${sign.meaning}`,
+        isImage: true,
+        category: sign.category,
+        keywords: sign.keywords.join(', ')
+      }))
     }
   };
 }
@@ -873,9 +898,19 @@ function QuizView(){
       onClick: () => pick(c)
     }, `${i+1}. ${c}`));
 
+    // Handle image-based questions vs text-based questions
+    const questionContent = cur.isImageQuestion 
+      ? imageOrFallback(cur.text, h('div', { class: 'small' }, 'Image not found: ' + cur.text))
+      : cur.text;
+
     const card = h('div', { class:'card' },
       h('div', { class:'small' }, `Question ${idx+1}/${q.length}`),
-      h('h3', {}, cur.text),
+      cur.isImageQuestion 
+        ? h('div', {}, 
+            h('h3', {}, 'What is this airport sign or marking?'),
+            h('div', { style: 'text-align: center; margin-bottom: 16px;' }, questionContent)
+          )
+        : h('h3', {}, questionContent),
       h('div', { class:'grid' }, choiceEls),
       showFeedback ? h('div', {},
         h('p', { class:'small' },
@@ -932,7 +967,48 @@ function QuizView(){
   return container;
 }
 
+// Generate quiz questions from airport signs data
+function generateAirportSignQuestions() {
+  const questions = [];
+  
+  // Create image-to-meaning questions
+  AIRPORT_SIGNS.forEach((sign, index) => {
+    // Get distractors from same category or similar categories
+    const sameCategory = AIRPORT_SIGNS.filter(s => s.category === sign.category && s.id !== sign.id);
+    const otherSigns = AIRPORT_SIGNS.filter(s => s.category !== sign.category);
+    
+    // Select 3 distractors
+    const distractors = [];
+    // First try to get 2 from same category
+    const sameCatShuffled = shuffle([...sameCategory]);
+    distractors.push(...sameCatShuffled.slice(0, 2));
+    
+    // Fill remaining slots with other signs
+    const otherShuffled = shuffle([...otherSigns]);
+    while (distractors.length < 3) {
+      distractors.push(otherShuffled[distractors.length - sameCatShuffled.slice(0, 2).length]);
+    }
+    
+    const choices = shuffle([sign.name, ...distractors.map(d => d.name)]);
+    
+    questions.push({
+      text: sign.image,
+      isImageQuestion: true,
+      imageAlt: `Airport sign/marking ${sign.number}`,
+      choices: choices,
+      answer: sign.name,
+      explanation: `${sign.meaning} (Category: ${sign.category})`,
+      ref: 'FAA Airport Signs & Markings'
+    });
+  });
+  
+  return questions;
+}
+
 function getQuizQuestionBank(){
+  // Generate airport signs questions
+  const airportSignQuestions = generateAirportSignQuestions();
+  
   return [
     { text:'Under 91.3, in an emergency the PIC may:', choices:['Deviate from any rule as required','Must request ATC clearance first','May not deviate under VFR','Only deviate for equipment failures'], answer:'Deviate from any rule as required', ref:'91.3(b)' },
     { text:'91.17 prohibits acting as crewmember when BAC is:', choices:['> 0.08','≥ 0.04','Any detectable amount','≥ 0.02'], answer:'≥ 0.04', ref:'91.17(a)(4)' },
@@ -1052,7 +1128,10 @@ function getQuizQuestionBank(){
       answer:'Continue normal pattern operations while watching for other traffic', 
       explanation:'§91.126(b) establishes standard traffic pattern procedures for non-towered airports. Radio communication is not required at non-towered airports, though it\'s highly recommended. Continue normal pattern operations while maintaining vigilant watch for other traffic.', 
       ref:'§91.126(b), §91.113' 
-    }
+    },
+    
+    // Add airport signs questions
+    ...airportSignQuestions
   ];
 }
 
