@@ -52,7 +52,9 @@ window.addEventListener('DOMContentLoaded', () => {
     '/assets/runway/threshold.svg',
     '/assets/runway/displaced-threshold.svg',
     '/assets/runway/touchdown-zone.svg',
-    '/assets/runway/hold-short.svg'
+    '/assets/runway/hold-short.svg',
+    // Airport signs images
+    ...AIRPORT_SIGNS.map(sign => sign.image)
   ]);
   render();
 });
@@ -1697,7 +1699,9 @@ function assetStatusList(){
     '/assets/runway/threshold.svg',
     '/assets/runway/displaced-threshold.svg',
     '/assets/runway/touchdown-zone.svg',
-    '/assets/runway/hold-short.svg'
+    '/assets/runway/hold-short.svg',
+    // Add airport signs images
+    ...AIRPORT_SIGNS.map(sign => sign.image)
   ];
   const ul = document.createElement('ul');
   items.forEach(src => {
