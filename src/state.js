@@ -1,6 +1,7 @@
 export const initialState = {
   progress: {
     studyReadSections: {},
+    airportSigns: {}, // Track which airport signs have been viewed
     flashcards: { 
       seen: 0, 
       correct: 0,
@@ -41,6 +42,7 @@ export function loadState(){
   merged.progress.sectional = { ...base.progress.sectional, ...((parsed.progress||{}).sectional||{}) };
   merged.progress.runway = { ...base.progress.runway, ...((parsed.progress||{}).runway||{}) };
   merged.progress.studyReadSections = { ...base.progress.studyReadSections, ...((parsed.progress||{}).studyReadSections||{}) };
+  merged.progress.airportSigns = { ...base.progress.airportSigns, ...((parsed.progress||{}).airportSigns||{}) };
   // Merge study topic navigation state
   merged.study = { ...base.study, ...(parsed.study||{}) };
   return merged;

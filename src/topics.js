@@ -70,6 +70,14 @@ export const TOPIC_MAP = {
     title: 'Large & Turbine Aircraft',
     description: 'Requirements specific to large aircraft and turbine-powered operations',
     sections: ['91.501', '91.503', '91.505', '91.507', '91.509', '91.511', '91.513', '91.515', '91.517', '91.519', '91.521', '91.523', '91.525', '91.527', '91.529', '91.531', '91.533', '91.535']
+  },
+
+  airport_signs: {
+    id: 'airport_signs',
+    title: 'Airport Signs & Markings',
+    description: 'Airport surface signs, markings, and lighting for runway safety',
+    sections: [], // Special topic - uses its own data structure
+    isSpecial: true
   }
 };
 
@@ -89,7 +97,18 @@ export function getTopicForSection(sectionId) {
 }
 
 // Helper function to calculate topic progress
-export function calculateTopicProgress(topic, readSections) {
+export function calculateTopicProgress(topic, readSections, airportSignsProgress = {}) {
+  if (topic.id === 'airport_signs') {
+    // Special handling for airport signs topic
+    const totalSigns = 21; // AIRPORT_SIGNS.length
+    const readCount = Object.keys(airportSignsProgress).length;
+    return {
+      total: totalSigns,
+      read: readCount,
+      percentage: totalSigns > 0 ? Math.round((readCount / totalSigns) * 100) : 0
+    };
+  }
+  
   const totalSections = topic.sections.length;
   const readCount = topic.sections.filter(sectionId => readSections[sectionId]).length;
   return {
