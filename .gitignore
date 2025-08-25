@@ -1,0 +1,97 @@
+# --- Python virtual environments ---
+.venv/
+venv/
+ENV/
+
+# Python caches / artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+*.egg
+.build/
+.dist/
+
+# Byte-compiled / optimized / DLL files
+*$py.class
+
+# Unit test / coverage (future-proof)
+.coverage*
+.pytest_cache/
+nosetests.xml
+htmlcov/
+.tox/
+.mypy_cache/
+.pyre/
+
+# Logs
+*.log
+
+# Node / front-end tooling (if introduced later)
+node_modules/
+.npm/
+.pnpm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build / dist outputs (static build artifacts if added later)
+dist/
+build/
+.tmp/
+.tmp-build/
+
+# Local environment & editor
+.env
+.env.*
+*.local
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+.idea/
+.vscode/
+.history/
+*.swp
+
+# OS / metadata
+Thumbs.db
+Desktop.ini
+
+# Coverage / reports
+coverage.xml
+junit.xml
+
+# Archives
+*.tar
+*.tar.gz
+*.zip
+*.tgz
+*.bz2
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# Cache directories
+.cache/
+.sass-cache/
+.parcel-cache/
+.eslintcache
+
+# Misc backups
+*.bak
+*.orig
+
+# Generated assets or downloads (retain committed curated assets)
+# If fetch script adds transient files elsewhere, ignore pattern below.
+assets/**/*.tmp
+
+# Ignore exported user progress backups if saved manually
+progress-export-*.json
+
+# Local tool state
+/.gh-temp/
