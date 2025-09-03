@@ -22,7 +22,17 @@ TypeScript/Fastify API service for the BFR Trainer application.
    cp .env.example .env
    ```
 
-3. Start development server:
+3. Set up database:
+   - Install PostgreSQL locally or use a hosted service
+   - Create a database for the application
+   - Update `DATABASE_URL` in `.env` file
+
+4. Run database migrations:
+   ```bash
+   npm run db:migrate
+   ```
+
+5. Start development server:
    ```bash
    npm run dev
    ```
@@ -58,6 +68,24 @@ Environment variables (see `.env.example`):
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - Environment mode (development/production/test)
 - `LOG_LEVEL` - Logging level (fatal/error/warn/info/debug/trace)
+- `DATABASE_URL` - PostgreSQL connection string (required)
+
+### Database Setup
+
+1. Install PostgreSQL locally or use a hosted service
+2. Create a database for the application
+3. Set the `DATABASE_URL` environment variable:
+   ```bash
+   DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+   ```
+
+### Database Scripts
+
+- `npm run db:generate` - Generate Prisma client
+- `npm run db:migrate` - Run database migrations in development
+- `npm run db:reset` - Reset database and run all migrations
+- `npm run db:deploy` - Deploy migrations to production
+- `npm run db:studio` - Open Prisma Studio (database GUI)
 
 ## Development
 
