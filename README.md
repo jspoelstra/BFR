@@ -118,6 +118,22 @@ Coding guidelines:
 - Maintain accessibility and keyboard support.
 - Update this README or `ATTRIBUTION.md` if assets or usage change.
 
+## Backend API (Development)
+
+The `api/` directory contains a TypeScript/Fastify backend service for future multi-user features.
+
+### Quick Start
+
+```bash
+cd api
+npm install
+npm run dev
+```
+
+The API will be available at `http://localhost:3000` with a health check at `/healthz`.
+
+See `api/README.md` for detailed API documentation.
+
 ## Attribution & Sources
 
 Please see `ATTRIBUTION.md` for full details. Relevant references include:
